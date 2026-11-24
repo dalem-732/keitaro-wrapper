@@ -1,3 +1,4 @@
+import os
 from collections.abc import AsyncIterator
 from pathlib import Path
 
@@ -21,7 +22,8 @@ def settings(tmp_path: Path) -> Settings:
     return Settings(
         keitaro_api_url=BASE_URL,  # type: ignore[arg-type]
         keitaro_api_key=API_KEY,  # type: ignore[arg-type]
-        database_url=f"sqlite+aiosqlite:///{tmp_path / 'test.db'}",
+        # TEST_DATABASE_URL=postgresql+asyncpg://... — прогнать те же тесты на PostgreSQL.
+        database_url=os.getenv("TEST_DATABASE_URL") or f"sqlite+aiosqlite:///{tmp_path / 'test.db'}",
         keitaro_retry_backoff_seconds=0,
         frontend_dist=tmp_path / "no-dist",
         _env_file=None,  # type: ignore[call-arg]
@@ -38,6 +40,7 @@ async def api(settings: Settings, kt_client: KeitaroClient) -> AsyncIterator[htt
     app = create_app(settings, keitaro_client=kt_client)
     async with app.router.lifespan_context(app):
         async with app.state.engine.begin() as conn:
+            await conn.run_sync(Base.metadata.drop_all)
             await conn.run_sync(Base.metadata.create_all)
         transport = httpx.ASGITransport(app=app)
         async with httpx.AsyncClient(transport=transport, base_url="http://wrapper") as client:

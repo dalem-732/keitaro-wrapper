@@ -225,6 +225,7 @@ async def test_streams_deleted_in_keitaro_disappear_on_fetch(
 ) -> None:
     cid, s1, _ = fake.seed_video_campaign()
     campaign = await import_campaign(api, cid)
+    assert campaign["last_fetched_at"].endswith(("Z", "+00:00"))  # время всегда с поясом
     del fake.streams[s1]
     campaign = await ok(await api.post(f"/api/campaigns/{campaign['id']}/fetch"))
     assert [s["name"] for s in campaign["streams"]] == ["Flow 2"]

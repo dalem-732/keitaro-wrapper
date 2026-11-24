@@ -2,14 +2,24 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Literal
+from datetime import UTC, datetime
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, field_validator
 
 from app.models import Campaign, OfferStatus, Stream, StreamOffer
 from app.services.stream_state import is_dirty, stream_issues
 from app.services.weights import ISSUE_MESSAGES
+
+
+def _as_utc(value: datetime | None) -> datetime | None:
+    # SQLite не хранит часовой пояс: время пишется в UTC, при чтении помечаем его явно.
+    if value is not None and value.tzinfo is None:
+        return value.replace(tzinfo=UTC)
+    return value
+
+
+UtcDatetime = Annotated[datetime | None, AfterValidator(_as_utc)]
 
 
 class ORM(BaseModel):
@@ -91,7 +101,7 @@ class StreamOut(BaseModel):
     is_dirty: bool
     issues: list[IssueOut]
     active_share_sum: int
-    last_pushed_at: datetime | None
+    last_pushed_at: UtcDatetime
     offers: list[StreamOfferOut]
 
     @classmethod
@@ -120,7 +130,7 @@ class CampaignSummaryOut(ORM):
     name: str
     domain: str | None
     group_name: str | None
-    last_fetched_at: datetime | None
+    last_fetched_at: UtcDatetime
 
 
 class CampaignOut(BaseModel):
@@ -130,7 +140,7 @@ class CampaignOut(BaseModel):
     alias: str | None
     domain: str | None
     group_name: str | None
-    last_fetched_at: datetime | None
+    last_fetched_at: UtcDatetime
     writable: bool
     keitaro_url: str
     streams: list[StreamOut]

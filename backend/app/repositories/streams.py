@@ -16,6 +16,6 @@ class StreamRepository:
         одного потока не выполнились параллельно. В SQLite запись и так сериализована."""
         stmt = select(Stream).where(Stream.id == stream_id)
         if self.session.bind is not None and self.session.bind.dialect.name == "postgresql":
-            stmt = stmt.with_for_update()
+            stmt = stmt.with_for_update(of=Stream)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
