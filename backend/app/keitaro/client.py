@@ -88,7 +88,8 @@ class KeitaroClient:
                         "Keitaro %s %s -> %s, retrying", method, path, response.status_code
                     )
                     last_error = KeitaroUnavailableError(
-                        _error_text(response), status_code=response.status_code
+                        f"Keitaro вернул {response.status_code}: {_error_text(response)}",
+                        status_code=response.status_code,
                     )
                 else:
                     return self._handle(response)

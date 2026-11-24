@@ -90,7 +90,7 @@ def create_app(
             return _error(404, "keitaro_not_found", f"Не найдено в Keitaro: {exc.message}")
         if isinstance(exc, KeitaroValidationError):
             return _error(422, "keitaro_validation", f"Keitaro отклонил данные: {exc.message}")
-        return _error(502, "keitaro_unavailable", f"Keitaro недоступен: {exc.message}")
+        return _error(502, "keitaro_unavailable", exc.message)
 
     @app.exception_handler(RequestValidationError)
     async def _validation(_: Request, exc: RequestValidationError) -> JSONResponse:

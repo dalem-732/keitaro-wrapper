@@ -23,7 +23,8 @@ def settings(tmp_path: Path) -> Settings:
         keitaro_api_url=BASE_URL,  # type: ignore[arg-type]
         keitaro_api_key=API_KEY,  # type: ignore[arg-type]
         # TEST_DATABASE_URL=postgresql+asyncpg://... — прогнать те же тесты на PostgreSQL.
-        database_url=os.getenv("TEST_DATABASE_URL") or f"sqlite+aiosqlite:///{tmp_path / 'test.db'}",
+        database_url=os.getenv("TEST_DATABASE_URL")
+        or f"sqlite+aiosqlite:///{tmp_path / 'test.db'}",
         keitaro_retry_backoff_seconds=0,
         frontend_dist=tmp_path / "no-dist",
         _env_file=None,  # type: ignore[call-arg]
